@@ -197,3 +197,84 @@ bash: cd: perm_dir: Permission denied
 - **확인**: 저장소를 `git clone`해 확인한 결과 GitHub에 빈 `README.md`가 이미 있었다
 - **해결**: `git push --force`는 기존 내용을 지우므로 쓰지 않고, 저장소를 먼저 복제한 뒤 내 파일을 복사해 넣고 `git add`, `git commit`, `git push`로 올렸다.
 - **배운 점**: Git은 원격의 내용을 보호하기 위해 push를 거절하며, 먼저 받아온 뒤 올려야 한다.
+## Docker 실습
+
+### D-1. Docker 설치 확인과 데몬 동작 확인
+- 목적: Docker가 설치되었는지, Docker 엔진(데몬)이 동작 중인지 확인
+```bash
+modugachi10042823@GNIA-C202-C06:~/codyssey-repo$ docker --version
+Docker version 29.9.2, build a82e528
+modugachi10042823@GNIA-C202-C06:~/codyssey-repo$ docker info
+Client:
+ Version:    29.9.2
+ Context:    default
+ Debug Mode: false
+ Plugins:
+```
+- 확인한 점: 버전이 출력되었고 `docker info`가 오류 없이 서버 정보를 보여주어 데몬이 동작 중임을 확인했다.
+
+### D-2. hello-world 컨테이너 실행
+- 목적: 컨테이너가 정상 실행되는지 첫 확인
+```bash
+modugachi10042823@GNIA-C202-C06:~/codyssey-repo$ docker run hello-world
+Unable to find image 'hello-world:latest' locally
+latest: Pulling from library/hello-world
+4f55086f7dd0: Pull complete 
+d5e71e642bf5: Download complete 
+Digest: sha256:c567b231f65614688711a75f31518a064258a51d442117a3e771a3a8fdba78ef
+Status: Downloaded newer image for hello-world:latest
+
+Hello from Docker!
+This message shows that your installation appears to be working correctly.
+
+To generate this message, Docker took the following steps:
+ 1. The Docker client contacted the Docker daemon.
+ 2. The Docker daemon pulled the "hello-world" image from the Docker Hub.
+    (amd64)
+ 3. The Docker daemon created a new container from that image which runs the
+    executable that produces the output you are currently reading.
+ 4. The Docker daemon streamed that output to the Docker client, which sent it
+    to your terminal.
+
+To try something more ambitious, you can run an Ubuntu container with:
+ $ docker run -it ubuntu bash
+
+Share images, automate workflows, and more with a free Docker ID:
+ https://hub.docker.com/
+
+For more examples and ideas, visit:
+ https://docs.docker.com/get-started/
+```
+- 확인한 점: 4f55086f7dd0: Pull complete, d5e71e642bf5: Download complete 가 보인다.
+### D-3. 이미지 목록 확인 (docker images)
+- 목적: 내 PC에 내려받은 이미지 확인
+```bash
+modugachi10042823@GNIA-C202-C06:~/codyssey-repo$ docker images
+                                                                 i Info →   U  In Use
+IMAGE                ID             DISK USAGE   CONTENT SIZE   EXTRA
+hello-world:latest   c567b231f656       25.9kB         9.49kB    U     
+```
+- 확인한 점: `hello-world:latest` 이미지가 있고 용량이 25.9kB로 매우 작다. `U`(In Use) 표시는 이 이미지로 만든 컨테이너가 있음을 뜻한다.
+
+### D-4. 컨테이너 목록 확인 (docker ps -a)
+- 목적: 종료된 컨테이너까지 포함해 전체 컨테이너 확인 (`-a`는 all)
+```bash
+$ docker ps -a
+CONTAINER ID   IMAGE         COMMAND    CREATED         STATUS                     PORTS     NAMES
+18ac2b39ce9a   hello-world   "/hello"   8 minutes ago   Exited (0) 8 minutes ago             thirsty_jemison
+```
+- 확인한 점: `hello-world` 이미지로 만든 컨테이너 `18ac2b39ce9a`가 있고, 상태는 `Exited (0)`으로 오류 없이 정상 종료되었다. 이름(`thirsty_jemison`)은 `--name`을 주지 않아 Docker가 자동으로 붙였다.
+
+### D-5. 출력 열 지정 (--format)
+- 목적: 필요한 열만 골라 표로 출력
+```bash
+$ docker ps -a --format "table {{.ID}}\t{{.Image}}\t{{.Status}}\t{{.Names}}"
+CONTAINER ID   IMAGE         STATUS                     NAMES
+18ac2b39ce9a   hello-world   Exited (0) 8 minutes ago   thirsty_jemison
+```
+- 확인한 점: `--format`으로 ID, 이미지, 상태, 이름 네 열만 출력되어 원하는 정보를 한눈에 볼 수 있었다.
+
+### 개념 정리: 이미지와 컨테이너
+- **이미지**: 실행에 필요한 파일과 설정을 담아 둔 **읽기 전용 설계도**. 변하지 않는다.
+- **컨테이너**: 이미지를 바탕으로 **실제로 실행되는 인스턴스**. 같은 이미지로 여러 개를 만들 수 있다.
+- 이번 실습에서 `hello-world` 이미지 하나로 컨테이너 `thirsty_jemison`이 만들어져 실행 후 종료되었다.
